@@ -20,7 +20,9 @@ public class CiraRec {
    private ProcMethod procMethod;
    private String     batchId;
    private Date       settlementDate;
+   private Date       returnSettlementDate;
    private String     voucherNumber;
+   private long       ticketNumber;
    private String[]   userFields = new String[NUM_USER_FIELDS];
    private String     agencyAcctCode;
    private String     description;
@@ -145,6 +147,20 @@ public class CiraRec {
       this.settlementDate = settlementDate;
    }
 
+   /**
+    * @return the returnSettlementDate
+    */
+   public Date getReturnSettlementDate() {
+      return returnSettlementDate;
+   }
+
+   /**
+    * @param returnSettlementDate the returnSettlementDate to set
+    */
+   public void setReturnSettlementDate(Date returnSettlementDate) {
+      this.returnSettlementDate = returnSettlementDate;
+   }
+
    public String getVoucherNumber() {
       return voucherNumber;
    }
@@ -153,12 +169,22 @@ public class CiraRec {
       this.voucherNumber = voucherNumber;
    }
 
+   /** @param index starts at zero */
    public String getUserField(int index) {
       return userFields[index];
    }
 
+   /** @param index starts at zero */
    public void setUserField(int index, String value) {
       userFields[index] = value;
+   }
+
+   public long getTicketNumber() {
+      return ticketNumber;
+   }
+
+   public void setTicketNumber(long ticketNumber) {
+      this.ticketNumber = ticketNumber;
    }
 
    public String getAgencyAcctCode() {

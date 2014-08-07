@@ -10,10 +10,10 @@ import org.junit.Test;
 public class CiraCsvTest {
 
    private static final String EV = "CIRA_HOME";
-   private String home;
+   private static String home;
 
    @BeforeClass
-   public void environment() throws Exception {
+   public static void environment() throws Exception {
       home = System.getenv(EV);
       if (home == null) {
          throw new Exception(EV + " not yet");
@@ -26,9 +26,10 @@ public class CiraCsvTest {
    }
 
    @Test
-   public void happyPath() {
-      CiraCsv cc = new CiraCsv(home + "/sample.csv");
+   public void happyPath() throws Exception {
+      CiraCsv cc = new CiraCsv(home + "/src/main/etc/sample.csv");
       Assert.assertTrue("Should be 2 records", cc.getItemCount() == 2);
-      Assert.assertTrue("Total should be $50", cc.getTotalAmount() == 50);
+      Assert.assertTrue("Total should be $50",
+            cc.getTotalAmount().equals(50));
    }
 }
