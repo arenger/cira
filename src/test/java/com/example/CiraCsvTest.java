@@ -1,6 +1,7 @@
 package com.example;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 import junit.framework.Assert;
 
@@ -29,7 +30,7 @@ public class CiraCsvTest {
    public void happyPath() throws Exception {
       CiraCsv cc = new CiraCsv(home + "/src/main/etc/sample.csv");
       Assert.assertTrue("Should be 2 records", cc.getItemCount() == 2);
-      Assert.assertTrue("Total should be $50",
-            cc.getTotalAmount().equals(50));
+      Assert.assertTrue("Total should be $40",
+            cc.getTotalAmount().compareTo(new BigDecimal(40)) == 0);
    }
 }

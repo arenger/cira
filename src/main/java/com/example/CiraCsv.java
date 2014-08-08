@@ -77,7 +77,7 @@ public class CiraCsv {
 
    private void init(File file) throws IOException, ParseException {
       CSVReader reader = null;
-      int lineNum = 1;
+      lineNum = 1;
       try {
          sdf1 = prepSdf("yyyy-MM-dd HH:mm:ss");
          reader = new CSVReader(new FileReader(file));
@@ -104,7 +104,7 @@ public class CiraCsv {
                default:
                   CiraRec rec = parseRec(fields);
                   items.add(rec);
-                  totalAmount.add(rec.getAmount());
+                  totalAmount = totalAmount.add(rec.getAmount());
                   break;
             }
             lineNum++;
@@ -124,66 +124,152 @@ public class CiraCsv {
       }
    }
 
+   private boolean isSet(String str) {
+      return ((str != null) && (str.length() != 0) &&
+              !str.equalsIgnoreCase("null"));
+   }
+
    private CiraRec parseRec(String[] fields) throws ParseException {
       assertFieldCount(fields, 44);
       CiraRec r = new CiraRec();
       int fieldIndex = 0;
-      r.setIrn(fields[fieldIndex++]);
-      r.setOtcEndpoint(fields[fieldIndex++]);
-      r.setAlc2(fields[fieldIndex++]);
-      r.setCaptureDate(sdf1.parse(fields[fieldIndex++]));
-      r.setReceiveDate(sdf1.parse(fields[fieldIndex++]));
-      try {
-         r.setTransitNumber(Long.parseLong(fields[fieldIndex++]));
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing transit number", lineNum);
+
+      String field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setIrn(field);
       }
-      try {
-         r.setCheckNumber(Integer.parseInt(fields[fieldIndex++]));
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing check number", lineNum);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setOtcEndpoint(field);
       }
-      try {
-         r.setAccount(Long.parseLong(fields[fieldIndex++]));
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing account", lineNum);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setAlc2(field);
       }
-      try {
-         String amt = fields[fieldIndex++];
-         if (amt.startsWith("$")) {
-            amt = amt.substring(1);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setCaptureDate(sdf1.parse(field));
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setReceiveDate(sdf1.parse(field));
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setTransitNumber(Long.parseLong(field));
+         } catch (NumberFormatException e) {
+            //TODO create a different ParseException the always
+            // includes the line number in its message string
+            throw new ParseException("Error parsing transit number", lineNum);
          }
-         r.setAmount(new BigDecimal(amt));
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing amount", lineNum);
       }
-      r.setCashierId(fields[fieldIndex++]);
-      try {
-         r.setItemType(ItemType.valueOf(
-            fields[fieldIndex++].toUpperCase().replaceAll("[ -]", "_")));
-      } catch (IllegalArgumentException e) {
-         throw new ParseException("Error parsing item type", lineNum);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setCheckNumber(Integer.parseInt(field));
+         } catch (NumberFormatException e) {
+            throw new ParseException("Error parsing check number", lineNum);
+         }
       }
-      try {
-         r.setProcMethod(ProcMethod.valueOf(
-            fields[fieldIndex++].toUpperCase().replaceAll("[ -]", "_")));
-      } catch (IllegalArgumentException e) {
-         throw new ParseException("Error parsing process method", lineNum);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setAccount(Long.parseLong(field));
+         } catch (NumberFormatException e) {
+            throw new ParseException("Error parsing account", lineNum);
+         }
       }
-      r.setBatchId(fields[fieldIndex++]);
-      r.setSettlementDate(sdf1.parse(fields[fieldIndex++]));
-      r.setReturnSettlementDate(sdf1.parse(fields[fieldIndex++]));
-      r.setVoucherNumber(fields[fieldIndex++]);
-      try {
-         r.setTicketNumber(Long.parseLong(fields[fieldIndex++]));
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing ticket number", lineNum);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            if (field.startsWith("$")) {
+               field = field.substring(1);
+            }
+            r.setAmount(new BigDecimal(field));
+         } catch (NumberFormatException e) {
+            throw new ParseException("Error parsing amount", lineNum);
+         }
       }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setCashierId(field);
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setItemType(ItemType.valueOf(
+               field.toUpperCase().replaceAll("[ -]", "_")));
+         } catch (IllegalArgumentException e) {
+            throw new ParseException("Error parsing item type", lineNum);
+         }
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setProcMethod(ProcMethod.valueOf(
+               field.toUpperCase().replaceAll("[ -]", "_")));
+         } catch (IllegalArgumentException e) {
+            throw new ParseException("Error parsing process method", lineNum);
+         }
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setBatchId(field);
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setSettlementDate(sdf1.parse(field));
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setReturnSettlementDate(sdf1.parse(field));
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setVoucherNumber(field);
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         try {
+            r.setTicketNumber(Long.parseLong(field));
+         } catch (NumberFormatException e) {
+            throw new ParseException("Error parsing ticket number", lineNum);
+         }
+      }
+
       for (int i = 0; i < CiraRec.NUM_USER_FIELDS; i++) {
-         r.setUserField(i, fields[fieldIndex++]);
+         field = fields[fieldIndex++];
+         if (isSet(field)) { 
+            r.setUserField(i, field);
+         }
       }
-      r.setAgencyAcctCode(fields[fieldIndex++]);
-      r.setDescription(fields[fieldIndex++]);
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setAgencyAcctCode(field);
+      }
+
+      field = fields[fieldIndex++];
+      if (isSet(field)) { 
+         r.setDescription(field);
+      }
       return r;
    }
 
