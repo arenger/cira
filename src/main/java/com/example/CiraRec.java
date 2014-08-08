@@ -147,16 +147,10 @@ public class CiraRec {
       this.settlementDate = settlementDate;
    }
 
-   /**
-    * @return the returnSettlementDate
-    */
    public Date getReturnSettlementDate() {
       return returnSettlementDate;
    }
 
-   /**
-    * @param returnSettlementDate the returnSettlementDate to set
-    */
    public void setReturnSettlementDate(Date returnSettlementDate) {
       this.returnSettlementDate = returnSettlementDate;
    }

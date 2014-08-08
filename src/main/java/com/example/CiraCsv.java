@@ -24,7 +24,7 @@ public class CiraCsv {
    // The following are only used during instance construction,
    // but are kept as member variables for ease of access:
    private int lineNum;
-   private SimpleDateFormat sdf1;
+   private SimpleDateFormat sdf;
      
    public CiraCsv(String filename) throws IOException, CiraException {
       init(new File(filename));
@@ -37,7 +37,7 @@ public class CiraCsv {
    private void init(File file) throws IOException, CiraException {
       CSVReader reader = null;
       lineNum = 1;
-      sdf1 = prepSdf("yyyy-MM-dd HH:mm:ss");
+      sdf = prepSdf("yyyy-MM-dd HH:mm:ss");
       try {
          reader = new CSVReader(new FileReader(file));
          items = new ArrayList<CiraRec>();
@@ -151,7 +151,7 @@ public class CiraCsv {
       field = fields[fieldIndex++];
       if (isSet(field)) { 
          try {
-            r.setCaptureDate(sdf1.parse(field));
+            r.setCaptureDate(sdf.parse(field));
          } catch (ParseException e) {
             throw new CiraException("Capture Date", lineNum, e);
          }
@@ -160,7 +160,7 @@ public class CiraCsv {
       field = fields[fieldIndex++];
       if (isSet(field)) { 
          try {
-            r.setReceiveDate(sdf1.parse(field));
+            r.setReceiveDate(sdf.parse(field));
          } catch (ParseException e) {
             throw new CiraException("Receive Date", lineNum, e);
          }
@@ -238,7 +238,7 @@ public class CiraCsv {
       field = fields[fieldIndex++];
       if (isSet(field)) { 
          try {
-            r.setSettlementDate(sdf1.parse(field));
+            r.setSettlementDate(sdf.parse(field));
          } catch (ParseException e) {
             throw new CiraException("Process Method", lineNum, e);
          }
@@ -247,7 +247,7 @@ public class CiraCsv {
       field = fields[fieldIndex++];
       if (isSet(field)) { 
          try {
-            r.setReturnSettlementDate(sdf1.parse(field));
+            r.setReturnSettlementDate(sdf.parse(field));
          } catch (ParseException e) {
             throw new CiraException("Settlement Date", lineNum, e);
          }
