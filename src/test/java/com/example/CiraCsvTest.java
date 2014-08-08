@@ -27,7 +27,7 @@ public class CiraCsvTest {
    }
 
    @Test
-   public void happyPath() throws Exception {
+   public void checkTotalAndCount() throws Exception {
       CiraCsv cc = new CiraCsv(home + "/src/main/etc/sample.csv");
       Assert.assertTrue("Should be 2 records", cc.getItemCount() == 2);
       Assert.assertTrue("Total should be $40",

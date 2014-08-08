@@ -26,60 +26,19 @@ public class CiraCsv {
    private int lineNum;
    private SimpleDateFormat sdf1;
      
-   public CiraCsv(String filename) throws IOException, ParseException {
+   public CiraCsv(String filename) throws IOException, CiraException {
       init(new File(filename));
    }
 
-   public CiraCsv(File file) throws IOException, ParseException {
+   public CiraCsv(File file) throws IOException, CiraException {
       init(file);
    }
 
-   private SimpleDateFormat prepSdf(String format) {
-      SimpleDateFormat sdf = new SimpleDateFormat(format);
-      sdf.setTimeZone(TZ);
-      sdf.setLenient(false);
-      return sdf;
-   }
-
-   private void assertFieldCount(String[] fields, int count) 
-      throws ParseException {
-      if (fields.length != count) {
-         throw new ParseException(String.format(
-            "Expected %d fields on line %d. Found %d",
-            count, lineNum, fields.length), lineNum);
-      }
-   }
-
-   private BigDecimal parseExpectedTotal(String[] fields)
-      throws ParseException {
-      assertFieldCount(fields, 2);
-      BigDecimal bd = null;
-      try {
-         bd = new BigDecimal(fields[1]);
-      } catch (NumberFormatException e) {
-         throw new ParseException("Error parsing expected total", lineNum);
-      }
-      return bd;
-   }
-
-   private int parseExpectedItemCount(String[] fields)
-      throws ParseException {
-      assertFieldCount(fields, 2);
-      int count = -1;
-      try {
-         count = Integer.parseInt(fields[1]);
-      } catch (NumberFormatException e) {
-         throw new ParseException(
-            "Error parsing expected item count", lineNum);
-      }
-      return count;
-   }
-
-   private void init(File file) throws IOException, ParseException {
+   private void init(File file) throws IOException, CiraException {
       CSVReader reader = null;
       lineNum = 1;
+      sdf1 = prepSdf("yyyy-MM-dd HH:mm:ss");
       try {
-         sdf1 = prepSdf("yyyy-MM-dd HH:mm:ss");
          reader = new CSVReader(new FileReader(file));
          items = new ArrayList<CiraRec>();
          totalAmount = new BigDecimal(0);
@@ -90,16 +49,15 @@ public class CiraCsv {
             switch (lineNum) {
                case 1:
                case 2:
+               case 5:
                   //currently ignored
                   break;
                case 3:
                   expectedTotalAmount = parseExpectedTotal(fields);
                   break;
                case 4:
+                  //TODO handle possible 65K error msg
                   expectedItemCount = parseExpectedItemCount(fields);
-                  break;
-               case 5:
-                  //TODO handle 65K error msg
                   break;
                default:
                   CiraRec rec = parseRec(fields);
@@ -124,12 +82,53 @@ public class CiraCsv {
       }
    }
 
+   private SimpleDateFormat prepSdf(String format) {
+      SimpleDateFormat sdf = new SimpleDateFormat(format);
+      sdf.setTimeZone(TZ);
+      sdf.setLenient(false);
+      return sdf;
+   }
+
+   private void assertFieldCount(String[] fields, int count) 
+      throws CiraException {
+      if (fields.length != count) {
+         throw new CiraException(String.format(
+            "Expected %d fields on line %d. Found %d",
+            count, lineNum, fields.length), lineNum);
+      }
+   }
+
+   private BigDecimal parseExpectedTotal(String[] fields)
+      throws CiraException {
+      assertFieldCount(fields, 2);
+      BigDecimal bd = null;
+      try {
+         bd = new BigDecimal(fields[1]);
+      } catch (NumberFormatException e) {
+         throw new CiraException("Error parsing expected total", lineNum);
+      }
+      return bd;
+   }
+
+   private int parseExpectedItemCount(String[] fields)
+      throws CiraException {
+      assertFieldCount(fields, 2);
+      int count = -1;
+      try {
+         count = Integer.parseInt(fields[1]);
+      } catch (NumberFormatException e) {
+         throw new CiraException(
+            "Error parsing expected item count", lineNum);
+      }
+      return count;
+   }
+
    private boolean isSet(String str) {
       return ((str != null) && (str.length() != 0) &&
               !str.equalsIgnoreCase("null"));
    }
 
-   private CiraRec parseRec(String[] fields) throws ParseException {
+   private CiraRec parseRec(String[] fields) throws CiraException {
       assertFieldCount(fields, 44);
       CiraRec r = new CiraRec();
       int fieldIndex = 0;
@@ -151,12 +150,20 @@ public class CiraCsv {
 
       field = fields[fieldIndex++];
       if (isSet(field)) { 
-         r.setCaptureDate(sdf1.parse(field));
+         try {
+            r.setCaptureDate(sdf1.parse(field));
+         } catch (ParseException e) {
+            throw new CiraException("Capture Date", lineNum, e);
+         }
       }
 
       field = fields[fieldIndex++];
       if (isSet(field)) { 
-         r.setReceiveDate(sdf1.parse(field));
+         try {
+            r.setReceiveDate(sdf1.parse(field));
+         } catch (ParseException e) {
+            throw new CiraException("Receive Date", lineNum, e);
+         }
       }
 
       field = fields[fieldIndex++];
@@ -164,9 +171,7 @@ public class CiraCsv {
          try {
             r.setTransitNumber(Long.parseLong(field));
          } catch (NumberFormatException e) {
-            //TODO create a different ParseException the always
-            // includes the line number in its message string
-            throw new ParseException("Error parsing transit number", lineNum);
+            throw new CiraException("Transit Number", lineNum, e);
          }
       }
 
@@ -175,7 +180,7 @@ public class CiraCsv {
          try {
             r.setCheckNumber(Integer.parseInt(field));
          } catch (NumberFormatException e) {
-            throw new ParseException("Error parsing check number", lineNum);
+            throw new CiraException("Check Number", lineNum, e);
          }
       }
 
@@ -184,7 +189,7 @@ public class CiraCsv {
          try {
             r.setAccount(Long.parseLong(field));
          } catch (NumberFormatException e) {
-            throw new ParseException("Error parsing account", lineNum);
+            throw new CiraException("Account", lineNum, e);
          }
       }
 
@@ -196,7 +201,7 @@ public class CiraCsv {
             }
             r.setAmount(new BigDecimal(field));
          } catch (NumberFormatException e) {
-            throw new ParseException("Error parsing amount", lineNum);
+            throw new CiraException("Amount", lineNum, e);
          }
       }
 
@@ -211,7 +216,7 @@ public class CiraCsv {
             r.setItemType(ItemType.valueOf(
                field.toUpperCase().replaceAll("[ -]", "_")));
          } catch (IllegalArgumentException e) {
-            throw new ParseException("Error parsing item type", lineNum);
+            throw new CiraException("Item Type", lineNum, e);
          }
       }
 
@@ -221,7 +226,7 @@ public class CiraCsv {
             r.setProcMethod(ProcMethod.valueOf(
                field.toUpperCase().replaceAll("[ -]", "_")));
          } catch (IllegalArgumentException e) {
-            throw new ParseException("Error parsing process method", lineNum);
+            throw new CiraException("Process Method", lineNum, e);
          }
       }
 
@@ -232,12 +237,20 @@ public class CiraCsv {
 
       field = fields[fieldIndex++];
       if (isSet(field)) { 
-         r.setSettlementDate(sdf1.parse(field));
+         try {
+            r.setSettlementDate(sdf1.parse(field));
+         } catch (ParseException e) {
+            throw new CiraException("Process Method", lineNum, e);
+         }
       }
 
       field = fields[fieldIndex++];
       if (isSet(field)) { 
-         r.setReturnSettlementDate(sdf1.parse(field));
+         try {
+            r.setReturnSettlementDate(sdf1.parse(field));
+         } catch (ParseException e) {
+            throw new CiraException("Settlement Date", lineNum, e);
+         }
       }
 
       field = fields[fieldIndex++];
@@ -250,7 +263,7 @@ public class CiraCsv {
          try {
             r.setTicketNumber(Long.parseLong(field));
          } catch (NumberFormatException e) {
-            throw new ParseException("Error parsing ticket number", lineNum);
+            throw new CiraException("Ticket Number", lineNum, e);
          }
       }
 
