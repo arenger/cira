@@ -32,7 +32,7 @@ public class CiraCsvTest {
 
    @Test
    public void checkSampleTotal() throws Exception {
-      Assert.assertEquals(sample.getTotalAmount(),new BigDecimal("40.00"));
+      Assert.assertEquals(sample.getTotalAmount(), new BigDecimal("40.00"));
    }
 
    @Test
